@@ -40,6 +40,11 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/reminders',
+    component: () => import('../views/Reminders.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/settings',
     component: () => import('../views/Settings.vue'),
     meta: { requiresAuth: true }

@@ -6,6 +6,7 @@ import conversationRoutes from './conversations.js'
 import summaryRoutes from './summary.js'
 import settingsRoutes from './settings.js'
 import webhookRoutes from './webhooks.js'
+import reminderRoutes from './reminders.js'
 
 export default async function apiV1Routes(fastify) {
   fastify.get('/', async () => ({
@@ -30,4 +31,5 @@ export default async function apiV1Routes(fastify) {
   await fastify.register(summaryRoutes)
   await fastify.register(settingsRoutes)
   await fastify.register(webhookRoutes)
+  await fastify.register(reminderRoutes)
 }

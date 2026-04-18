@@ -99,6 +99,11 @@ const navItems = [
     svg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
   },
   {
+    to: '/reminders', label: 'Reminders',
+    color: '#f59e0b', activeBg: 'rgba(245,158,11,0.12)',
+    svg: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  },
+  {
     to: '/settings', label: 'Settings',
     color: '#38bdf8', activeBg: 'rgba(14,165,233,0.12)',
     svg: '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>',
