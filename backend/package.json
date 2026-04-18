@@ -20,6 +20,7 @@
     "dotenv": "^16.4.5",
     "fastify": "^4.28.0",
     "fastify-plugin": "^4.5.1",
+    "libphonenumber-js": "^1.12.41",
     "node-cron": "^3.0.3",
     "openai": "^6.33.0",
     "pg": "^8.11.3",

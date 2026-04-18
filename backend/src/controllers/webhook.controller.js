@@ -1,6 +1,16 @@
+import { parsePhoneNumber } from 'libphonenumber-js'
 import { sendMessage } from '../services/whatsapp.js'
 import { processMessage } from '../services/registry.js'
 import { User, Person, Conversation } from '../models/index.js'
+
+function extractNationalNumber(waNumber) {
+  try {
+    const phone = parsePhoneNumber(`+${waNumber}`)
+    return phone.nationalNumber
+  } catch {
+    return waNumber
+  }
+}
 
 export async function verifyWebhook(request, reply) {
   const mode = request.query['hub.mode']
@@ -24,7 +34,7 @@ export async function handleWebhook(request, reply) {
 
     for (const msg of messages) {
       if (msg.type !== 'text') continue
-      const senderMobile = msg.from
+      const senderMobile = extractNationalNumber(msg.from)
       const messageText = msg.text?.body?.trim()
       if (!senderMobile || !messageText) continue
 
