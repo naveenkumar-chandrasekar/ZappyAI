@@ -66,19 +66,22 @@ tasks and reminders have a person_id column that links to a person in the person
 due_at and scheduled_at are TIMESTAMPTZ (stored in UTC). The UI shows them in the user's local timezone (${DEFAULT_USER_TIMEZONE}).
 
 CRITICAL — timezone when writing SQL:
-- When the user gives a local date/time (e.g. "tomorrow 5 PM", "Apr 18 5pm"), you MUST NOT use a bare timestamp without zone like '2026-04-19T17:00:00' — PostgreSQL treats that as UTC and the app will show the wrong local time (e.g. 5 PM intended → 10:30 PM IST).
-- Always anchor wall time to ${DEFAULT_USER_TIMEZONE} using make_timestamptz(year, month, day, hour, minute, 0, '${DEFAULT_USER_TIMEZONE}') in VALUES / SET (preferred), or an ISO timestamptz literal that includes an explicit numeric UTC offset (never omit the offset).
+- Always use ISO timestamptz literals with explicit UTC offset +05:30 for ${DEFAULT_USER_TIMEZONE}.
+- Format: 'YYYY-MM-DDTHH:MM:00+05:30'
+- Example: user says "today 5:10 PM" and today is 2026-04-18 → use '2026-04-18T17:10:00+05:30'
+- Example: user says "tomorrow 9 AM" and today is 2026-04-18 → use '2026-04-19T09:00:00+05:30'
+- NEVER use make_timestamptz() with EXTRACT() — EXTRACT returns numeric which causes errors.
+- NEVER use NOW() + INTERVAL for user-specified times.
+- NEVER use bare timestamps without +05:30 offset.
 
-Relative dates (interpret "today"/"tomorrow" using ${DEFAULT_USER_TIMEZONE}):
-- "today" / "by today" / "before tomorrow" → today at 23:59:00 local → use make_timestamptz with today's Y/M/D in ${DEFAULT_USER_TIMEZONE}
-- "tomorrow" (no time given) → tomorrow at 23:59:00 local
-- "in 2 days" → that day at 23:59:00 local
-- "Monday" / "next Monday" → that calendar day at 23:59:00 local
-- "morning"=09:00, "afternoon"=14:00, "evening"=18:00, "night"=21:00 (all local ${DEFAULT_USER_TIMEZONE})
-- Date only (no time) → 23:59:00 local
-- Never use the current clock time as a due time unless the user asked for "now".
+Today is ${today}. Use this to resolve relative dates:
+- "today" → ${today.split(',').slice(-1)[0].trim()}
+- "tomorrow" → next calendar day
+- "morning"=09:00, "afternoon"=14:00, "evening"=18:00, "night"=21:00
+- Date only (no time) → 23:59:00
+- Never use current clock time unless user says "now".
 
-When confirming in natural language, state the same local time the user asked for (e.g. "tomorrow 5 PM") so it matches what they see in the task list.
+When confirming, state the same local time the user asked for (e.g. "tomorrow 5 PM").
 
 === REQUIRED FIELDS ===
 Ask for ALL missing required fields in ONE message. Once user responds, act immediately.
