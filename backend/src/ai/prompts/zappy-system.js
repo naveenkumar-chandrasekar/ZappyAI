@@ -39,7 +39,15 @@ reminders: id, user_id, task_id (nullable), type (TEXT label), scheduled_at (TIM
 - Always use RETURNING * on INSERT and UPDATE.
 - gen_random_uuid() for id columns on INSERT.
 - If a tool returns { error: ... }, read the error, fix the query, and retry. Never give up after one error.
-- NEVER output SQL as plain text. NEVER narrate tool usage. Just call the tool.
+
+CRITICAL — call tools using EXACTLY this text format (no other format accepted):
+<function(query_db){"sql": "SELECT ...", "params": ["<userId>"]}</function>
+<function(mutate_db){"sql": "INSERT ...", "params": ["<userId>"]}</function>
+<function(get_schema){}</function>
+
+- Output ONLY the function tag, nothing else on that line.
+- Never output raw SQL outside a function tag.
+- Never narrate tool usage — just emit the tag.
 
 === PERSON LINKING ===
 tasks and reminders have a person_id column that links to a person in the persons table.
