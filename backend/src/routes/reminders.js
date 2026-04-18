@@ -2,7 +2,7 @@ import { Reminder, Task } from '../models/index.js'
 import { Op } from 'sequelize'
 
 export default async function reminderRoutes(fastify) {
-  fastify.get('/reminders', async (request, reply) => {
+  fastify.get('/reminders', { preHandler: fastify.authenticate }, async (request, reply) => {
     const { userId } = request.user
     const reminders = await Reminder.findAll({
       where: { user_id: userId },
@@ -12,7 +12,7 @@ export default async function reminderRoutes(fastify) {
     return reply.code(200).send({ reminders })
   })
 
-  fastify.delete('/reminders/:id', async (request, reply) => {
+  fastify.delete('/reminders/:id', { preHandler: fastify.authenticate }, async (request, reply) => {
     const { userId } = request.user
     const reminder = await Reminder.findOne({ where: { id: request.params.id, user_id: userId } })
     if (!reminder) return reply.code(404).send({ error: 'Not found' })
