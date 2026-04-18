@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useToast } from '../composables/useToast.js'
 
-const api = axios.create({ baseURL: '/api/v1' })
+const api = axios.create({ baseURL: `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1` })
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
