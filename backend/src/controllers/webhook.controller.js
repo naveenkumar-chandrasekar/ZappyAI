@@ -34,7 +34,8 @@ export async function handleWebhook(request, reply) {
 
     for (const msg of messages) {
       if (msg.type !== 'text') continue
-      const senderMobile = extractNationalNumber(msg.from)
+      const waNumber = msg.from
+      const senderMobile = extractNationalNumber(waNumber)
       const messageText = msg.text?.body?.trim()
       if (!senderMobile || !messageText) continue
 
@@ -42,14 +43,14 @@ export async function handleWebhook(request, reply) {
 
       if (!user) {
         user = await User.create({ mobile_number: senderMobile })
-        await sendMessage(senderMobile, "Hi! I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
+        await sendMessage(waNumber, "Hi! I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
         continue
       }
 
       if (!user.name) {
         const GREETING_RE = /^(hi|hello|hey|hii|helo|howdy|greetings|sup|yo|good\s*(morning|afternoon|evening|day))[\s!?.]*$/i
         if (GREETING_RE.test(messageText.trim())) {
-          await sendMessage(senderMobile, "Hi there! 👋 I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
+          await sendMessage(waNumber, "Hi there! 👋 I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
           continue
         }
         const name = messageText.trim()
@@ -58,7 +59,7 @@ export async function handleWebhook(request, reply) {
           where: { user_id: user.id, is_owner: true },
           defaults: { name, birthday: null, priority: 'High', is_owner: true },
         })
-        await sendMessage(senderMobile, `Nice to meet you, ${name}! 🎉\n\nWhat's your birthday? (e.g. April 8, 2000)`)
+        await sendMessage(waNumber, `Nice to meet you, ${name}! 🎉\n\nWhat's your birthday? (e.g. April 8, 2000)`)
         continue
       }
 
@@ -66,18 +67,18 @@ export async function handleWebhook(request, reply) {
       if (ownerPerson && !ownerPerson.birthday) {
         const parsed = new Date(messageText.trim())
         if (isNaN(parsed.getTime())) {
-          await sendMessage(senderMobile, "I didn't catch that. Please enter your birthday like: April 8, 2000")
+          await sendMessage(waNumber, "I didn't catch that. Please enter your birthday like: April 8, 2000")
           continue
         }
         await ownerPerson.update({ birthday: parsed })
-        await sendMessage(senderMobile, `Got it! I'll remember that.\n\nI can help you manage tasks, contacts, notes, and reminders. Just tell me what you need!`)
+        await sendMessage(waNumber, `Got it! I'll remember that.\n\nI can help you manage tasks, contacts, notes, and reminders. Just tell me what you need!`)
         continue
       }
 
       const replyText = await processMessage(user.id, messageText)
       await Conversation.create({ user_id: user.id, role: 'user', message: messageText })
       await Conversation.create({ user_id: user.id, role: 'assistant', message: replyText })
-      await sendMessage(senderMobile, replyText)
+      await sendMessage(waNumber, replyText)
     }
   } catch (err) {
     console.error('[Webhook] Error:', err.message)
