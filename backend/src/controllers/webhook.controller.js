@@ -37,6 +37,11 @@ export async function handleWebhook(request, reply) {
       }
 
       if (!user.name) {
+        const GREETING_RE = /^(hi|hello|hey|hii|helo|howdy|greetings|sup|yo|good\s*(morning|afternoon|evening|day))[\s!?.]*$/i
+        if (GREETING_RE.test(messageText.trim())) {
+          await sendMessage(senderMobile, "Hi there! 👋 I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
+          continue
+        }
         const name = messageText.trim()
         await user.update({ name })
         await Person.findOrCreate({
