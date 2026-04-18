@@ -92,7 +92,7 @@ export const TOOLS_OPENAI = [
         type: 'object',
         properties: {
           sql: { type: 'string', description: 'Parameterized SELECT statement. Use $1 for user_id.' },
-          params: { type: 'array', items: {}, description: 'Pass "<userId>" as first param for user_id.' },
+          params: { type: 'array', items: { type: 'string' }, description: 'Pass "<userId>" as first param for user_id.' },
         },
         required: ['sql'],
       },
@@ -107,7 +107,7 @@ export const TOOLS_OPENAI = [
         type: 'object',
         properties: {
           sql: { type: 'string', description: 'Parameterized INSERT/UPDATE/DELETE. Use $1 for user_id.' },
-          params: { type: 'array', items: {}, description: 'Pass "<userId>" as first param for user_id.' },
+          params: { type: 'array', items: { type: 'string' }, description: 'Pass "<userId>" as first param for user_id.' },
         },
         required: ['sql'],
       },

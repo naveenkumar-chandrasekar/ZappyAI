@@ -85,7 +85,7 @@ export async function runOpenAICompatLoop(messages, userId) {
         model: OPENAI_COMPAT_MODEL,
         messages: [{ role: 'system', content: systemPrompt }, ...messages],
         tools: TOOLS_OPENAI,
-        tool_choice: forceMutate ? 'required' : 'auto',
+        tool_choice: 'auto',
       })
     } catch (err) {
       console.error('[Assistant] LLM request failed:', err.message)
