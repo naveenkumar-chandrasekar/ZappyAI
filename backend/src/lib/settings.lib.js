@@ -8,20 +8,21 @@ export async function getUserSettings(userId) {
 }
 
 export async function updateUserSettings(userId, data) {
-  const { name, settings } = data
+  const { name, birthday, settings } = data
   const user = await User.findByPk(userId)
   if (!user) return null
 
-  if (name !== undefined) {
-    user.name = name
-  }
+  if (name !== undefined) user.name = name
   if (settings !== undefined && typeof settings === 'object') {
     user.settings = { ...user.settings, ...settings }
   }
   await user.save()
 
-  if (name !== undefined) {
-    await Person.update({ name }, { where: { user_id: userId, is_owner: true } })
+  const personUpdates = {}
+  if (name !== undefined) personUpdates.name = name
+  if (birthday !== undefined) personUpdates.birthday = birthday
+  if (Object.keys(personUpdates).length) {
+    await Person.update(personUpdates, { where: { user_id: userId, is_owner: true } })
   }
 
   return user

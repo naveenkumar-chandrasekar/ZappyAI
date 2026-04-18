@@ -97,11 +97,11 @@
           </form>
         </div>
 
-        <!-- Step 3: Name setup (new users only) -->
+        <!-- Step 3: Name + Birthday setup (new users only) -->
         <div v-if="step === 3">
           <div class="card-header">
-            <h1>What's your name?</h1>
-            <p class="card-subtitle">One last thing to personalise your experience</p>
+            <h1>Set up your profile</h1>
+            <p class="card-subtitle">Tell us a bit about yourself to get started</p>
           </div>
           <form @submit.prevent="completeProfile">
             <div class="field">
@@ -115,8 +115,17 @@
                 autofocus
               />
             </div>
+            <div class="field">
+              <label>Birthday <span class="required">*</span></label>
+              <input
+                v-model="birthday"
+                type="date"
+                :disabled="loading"
+                required
+              />
+            </div>
             <div v-if="error" class="error-msg">{{ error }}</div>
-            <button type="submit" :disabled="loading || !name" class="btn-primary">
+            <button type="submit" :disabled="loading || !name || !birthday" class="btn-primary">
               <span v-if="loading" class="spinner"></span>
               {{ loading ? 'Setting up...' : 'Get Started →' }}
             </button>
@@ -141,9 +150,10 @@ const step = ref(1)
 const mobile = ref('')
 const otp = ref('')
 const name = ref('')
+const birthday = ref('')
 const loading = ref(false)
 const error = ref('')
-const pendingToken = ref(null) // hold token until profile is complete
+const pendingToken = ref(null)
 
 async function requestOtp() {
   error.value = ''
@@ -187,7 +197,7 @@ async function completeProfile() {
   try {
     const headers = { Authorization: `Bearer ${pendingToken.value}` }
 
-    await api.patch('/settings', { name: name.value }, { headers })
+    await api.patch('/settings', { name: name.value, birthday: birthday.value }, { headers })
 
     // Now commit token to store/localStorage — router guard won't fire until push
     authStore.login(pendingToken.value, { mobile: mobile.value, name: name.value })

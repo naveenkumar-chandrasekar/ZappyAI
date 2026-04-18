@@ -43,7 +43,19 @@ export async function handleWebhook(request, reply) {
           where: { user_id: user.id, is_owner: true },
           defaults: { name, birthday: null, priority: 'High', is_owner: true },
         })
-        await sendMessage(senderMobile, `Nice to meet you, ${name}!\n\nI can help you manage tasks, contacts, notes, and reminders. Just tell me what you need!`)
+        await sendMessage(senderMobile, `Nice to meet you, ${name}! 🎉\n\nWhat's your birthday? (e.g. April 8, 2000)`)
+        continue
+      }
+
+      const ownerPerson = await Person.findOne({ where: { user_id: user.id, is_owner: true } })
+      if (ownerPerson && !ownerPerson.birthday) {
+        const parsed = new Date(messageText.trim())
+        if (isNaN(parsed.getTime())) {
+          await sendMessage(senderMobile, "I didn't catch that. Please enter your birthday like: April 8, 2000")
+          continue
+        }
+        await ownerPerson.update({ birthday: parsed })
+        await sendMessage(senderMobile, `Got it! I'll remember that.\n\nI can help you manage tasks, contacts, notes, and reminders. Just tell me what you need!`)
         continue
       }
 
