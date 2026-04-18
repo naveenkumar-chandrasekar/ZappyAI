@@ -1,0 +1,14 @@
+node_modules/
+dist/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Vite
+.vite/

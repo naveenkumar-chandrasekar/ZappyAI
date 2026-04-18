@@ -1,0 +1,58 @@
+import { sendMessage } from '../services/whatsapp.js'
+import { processMessage } from '../services/registry.js'
+import { User, Person, Conversation } from '../models/index.js'
+
+export async function verifyWebhook(request, reply) {
+  const mode = request.query['hub.mode']
+  const token = request.query['hub.verify_token']
+  const challenge = request.query['hub.challenge']
+
+  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    console.log('[Webhook] WhatsApp webhook verified.')
+    return reply.code(200).send(parseInt(challenge, 10))
+  }
+
+  return reply.code(403).send({ error: 'Forbidden' })
+}
+
+export async function handleWebhook(request, reply) {
+  reply.code(200).send({ status: 'ok' })
+
+  try {
+    const messages = request.body?.entry?.[0]?.changes?.[0]?.value?.messages
+    if (!messages?.length) return
+
+    for (const msg of messages) {
+      if (msg.type !== 'text') continue
+      const senderMobile = msg.from
+      const messageText = msg.text?.body?.trim()
+      if (!senderMobile || !messageText) continue
+
+      let user = await User.findOne({ where: { mobile_number: senderMobile } })
+
+      if (!user) {
+        user = await User.create({ mobile_number: senderMobile })
+        await sendMessage(senderMobile, "Hi! I'm Zappy, your personal AI assistant.\n\nWhat's your name?")
+        continue
+      }
+
+      if (!user.name) {
+        const name = messageText.trim()
+        await user.update({ name })
+        await Person.findOrCreate({
+          where: { user_id: user.id, is_owner: true },
+          defaults: { name, birthday: null, priority: 'High', is_owner: true },
+        })
+        await sendMessage(senderMobile, `Nice to meet you, ${name}!\n\nI can help you manage tasks, contacts, notes, and reminders. Just tell me what you need!`)
+        continue
+      }
+
+      const replyText = await processMessage(user.id, messageText)
+      await Conversation.create({ user_id: user.id, role: 'user', message: messageText })
+      await Conversation.create({ user_id: user.id, role: 'assistant', message: replyText })
+      await sendMessage(senderMobile, replyText)
+    }
+  } catch (err) {
+    console.error('[Webhook] Error:', err.message)
+  }
+}
