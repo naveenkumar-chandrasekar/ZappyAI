@@ -5,6 +5,7 @@ import { openaiCompatClient, OPENAI_COMPAT_MODEL, MAX_TURNS, APP_MODE } from '..
 const FAKE_CONFIRM_RE = /\b(done|added|created|updated|deleted|saved|marked|removed|scheduled)\b/i
 const FAKE_LOOKUP_RE = /\b(i'?m checking|let me check|let me look|i'?ll (look|search|check|query|fetch|retrieve)|looking up|searching for|checking for|fetching|i couldn'?t find|no results|not found in your|isn'?t in your)\b/i
 const TEXT_TOOL_RE = /\b(query_db|mutate_db|get_schema)\s*\((\{[\s\S]*?\})\)/g
+const FUNC_TAG_RE = /<function\((query_db|mutate_db|get_schema)\)(\{[\s\S]*?\})(?:<\/function>)?/g
 const RAW_SQL_RE = /^\s*(SELECT|INSERT|UPDATE|DELETE)\b[\s\S]+?;?\s*$/i
 
 function extractTextToolCalls(text) {
@@ -12,6 +13,13 @@ function extractTextToolCalls(text) {
   let match
   TEXT_TOOL_RE.lastIndex = 0
   while ((match = TEXT_TOOL_RE.exec(text)) !== null) {
+    try {
+      calls.push({ name: match[1], input: JSON.parse(match[2]) })
+    } catch {
+    }
+  }
+  FUNC_TAG_RE.lastIndex = 0
+  while ((match = FUNC_TAG_RE.exec(text)) !== null) {
     try {
       calls.push({ name: match[1], input: JSON.parse(match[2]) })
     } catch {
